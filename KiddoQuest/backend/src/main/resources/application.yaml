@@ -1,0 +1,38 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: kiddoquest
+  datasource:
+    url: jdbc:mysql://192.168.44.128:3306/kiddoquest?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: root123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  h2:
+    console:
+      enabled: false
+      path: /h2-console
+
+logging:
+  level:
+    org.springframework.security: INFO
+
+kiddoquest:
+  jwt:
+    issuer: kiddoquest
+    # Base64-encoded 32+ bytes key. Replace for production.
+    secret: "c3VwZXItZGV2LW9ubHktc2VjcmV0LWtleS0zMmJ5dGVzISE="
+    accessTokenMinutes: 1440
+  game:
+    minutesPerPoint: 1
+    maxRedeemsPerMonth: 30
+    essayRewardPoints: 5
+    dictationRewardPoints: 2
+
