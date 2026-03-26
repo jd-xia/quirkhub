@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "jiandao/kiddoquest-frontend:latest"
+        GIT_REPO = "https://github.com/jd-xia/quirkhub.git"
+        BACKEND_DIR = "KiddoQuest/frontend"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: "${GIT_REPO}", branch: 'main'
+            }
+        }
+
+        stage('Build Docker') {
+            steps {
+                dir("${BACKEND_DIR}") {
+                    script {
+					
+                        sh "docker compose build"
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker') {
+            steps {
+                script {
+                        sh "docker push ${DOCKER_IMAGE}"
+                    
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed."
+        }
+    }
+}
