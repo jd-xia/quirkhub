@@ -539,17 +539,24 @@ export function WeeklyScoreDetailPage() {
 
   const ws = q.data
 
+  const reviewRemain = (weekReviewed.total ?? 0) - (weekReviewed.reviewed ?? 0)
+  const kidHint =
+    isLocked ? null
+      : reviewRemain <= 0 ? '全部打卡完成，太棒啦～'
+      : reviewRemain <= 3 ? `再完成 ${reviewRemain} 项就全部打卡啦，加油～`
+      : `每天选一天，用 ☀️🌤☁️ 给表现打打分～`
+
   return (
-    <Stack spacing={2.5}>
+    <Stack spacing={3}>
       <PageHeader
         title="一周总结 · 填写"
-        subtitle={ws ? `${ws.weekStartDate} ~ ${ws.weekEndDate}` : '加载中…'}
+        subtitle={ws ? `${ws.weekStartDate} ～ ${ws.weekEndDate} · 选一天，给表现打打分` : '加载中…'}
         sticker="sparkles"
         tone="amber"
         actions={
           <>
-            {ws ? <Chip label={`状态：${ws.status}`} /> : null}
-            <Button component={RouterLink} to="/weekly-scores" variant="outlined">
+            {ws ? <Chip label={`状态：${ws.status}`} size="small" /> : null}
+            <Button component={RouterLink} to="/weekly-scores" variant="outlined" size="medium">
               返回列表
             </Button>
             {ws?.status === 'SUBMITTED' ? (
@@ -564,37 +571,73 @@ export function WeeklyScoreDetailPage() {
         }
       />
 
-      <Card>
-        <CardContent>
-          <Stack spacing={1.5}>
+      {/* 本周成绩单 - KIDS 风格区块 */}
+      <Card
+        sx={{
+          borderRadius: 5,
+          overflow: 'hidden',
+          border: '1px solid',
+          borderColor: 'rgba(251,191,36,0.22)',
+          background:
+            'radial-gradient(320px 160px at 8% 0%, rgba(251,191,36,0.12), transparent 55%), radial-gradient(280px 140px at 92% 10%, rgba(244,114,182,0.10), transparent 55%), linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,251,235,0.88))',
+        }}
+      >
+        <CardContent sx={{ py: 2, px: { xs: 2, sm: 2.5 } }}>
+          <Stack spacing={2}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Sticker name="sparkles" size={22} />
+              <Typography sx={{ fontWeight: 1000, letterSpacing: -0.2, fontSize: '1.1rem' }}>
+                本周成绩单
+              </Typography>
+              {kidHint ? (
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 800 }}>
+                  {kidHint}
+                </Typography>
+              ) : null}
+            </Box>
+
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }}>
-              <Box sx={{ flex: 1, minWidth: 260 }}>
-                <Stack direction="row" spacing={1} alignItems="baseline">
+              <Box
+                sx={{
+                  flex: 1,
+                  minWidth: 200,
+                  py: 1.5,
+                  px: 2,
+                  borderRadius: 4,
+                  border: '1px solid',
+                  borderColor: 'rgba(251,191,36,0.28)',
+                  bgcolor: 'rgba(255,255,255,0.65)',
+                }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="baseline" flexWrap="wrap">
                   <Typography sx={{ fontWeight: 900, letterSpacing: -0.2 }}>本周总分</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 1100, letterSpacing: -0.5 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 1100, letterSpacing: -0.5, color: 'primary.main' }}>
                     {ws?.totalScore ?? 0}
                   </Typography>
                 </Stack>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-                  {isLocked ? '已提交后不可再修改' : saveMut.isPending ? '自动保存中…' : Object.keys(dirty).length ? '等待自动保存…' : '已保存'}
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 800 }}>
+                  {isLocked ? '已提交，不可再修改' : saveMut.isPending ? '自动保存中…' : Object.keys(dirty).length ? '等待自动保存…' : '已保存'}
                 </Typography>
               </Box>
 
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" alignItems="center">
                 <Chip
                   size="small"
-                  label={`完成度 ${weekReviewed.pct}%（${weekReviewed.reviewed}/${weekReviewed.total}）`}
-                  sx={{ fontWeight: 950, bgcolor: 'rgba(255,255,255,0.70)' }}
+                  icon={<Sticker name="flower" size={14} />}
+                  label={`完成 ${weekReviewed.pct}%（${weekReviewed.reviewed}/${weekReviewed.total}）`}
+                  sx={{ fontWeight: 950, bgcolor: 'rgba(255,255,255,0.75)' }}
                 />
                 <Chip
                   size="small"
-                  label={`最佳：周${DAY_CN[bestWorstDay.best.i]} ${bestWorstDay.best.v > 0 ? `+${bestWorstDay.best.v}` : bestWorstDay.best.v}`}
-                  sx={{ fontWeight: 950, bgcolor: 'rgba(34,197,94,0.10)', border: '1px solid', borderColor: 'rgba(34,197,94,0.22)' }}
+                  icon={<Sticker name="weatherSun" size={14} />}
+                  label={`最棒：周${DAY_CN[bestWorstDay.best.i]} ${bestWorstDay.best.v > 0 ? `+${bestWorstDay.best.v}` : bestWorstDay.best.v}`}
+                  sx={{ fontWeight: 950, bgcolor: 'rgba(34,197,94,0.12)', border: '1px solid', borderColor: 'rgba(34,197,94,0.24)' }}
                 />
                 <Chip
                   size="small"
+                  icon={<Sticker name="weatherCloud" size={14} />}
                   label={`加油：周${DAY_CN[bestWorstDay.worst.i]} ${bestWorstDay.worst.v > 0 ? `+${bestWorstDay.worst.v}` : bestWorstDay.worst.v}`}
-                  sx={{ fontWeight: 950, bgcolor: 'rgba(239,68,68,0.08)', border: '1px solid', borderColor: 'rgba(239,68,68,0.18)' }}
+                  sx={{ fontWeight: 950, bgcolor: 'rgba(251,191,36,0.12)', border: '1px solid', borderColor: 'rgba(251,191,36,0.22)' }}
                 />
               </Stack>
             </Stack>
@@ -603,17 +646,17 @@ export function WeeklyScoreDetailPage() {
               variant="determinate"
               value={weekReviewed.pct}
               sx={{
-                height: 10,
+                height: 12,
                 borderRadius: 999,
                 bgcolor: 'rgba(15,23,42,0.06)',
                 '& .MuiLinearProgress-bar': {
                   borderRadius: 999,
-                  background: 'linear-gradient(90deg, rgba(79,70,229,0.30), rgba(244,114,182,0.26), rgba(34,197,94,0.22))',
+                  background: 'linear-gradient(90deg, rgba(251,191,36,0.55), rgba(244,114,182,0.45), rgba(34,197,94,0.40))',
                 },
               }}
             />
 
-            <Divider />
+            <Divider sx={{ borderColor: 'rgba(251,191,36,0.18)' }} />
 
             <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" alignItems="center">
               <Chip size="small" icon={<Sticker name="sprout" size={16} />} label={`学习 +${weekCatTotals.LEARNING}`} sx={{ fontWeight: 950 }} />
@@ -631,12 +674,12 @@ export function WeeklyScoreDetailPage() {
               sx={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(7, 1fr)',
-                gap: 1,
+                gap: 1.25,
                 alignItems: 'end',
-                p: 1.25,
+                p: 1.5,
                 borderRadius: 4,
                 border: '1px solid',
-                borderColor: 'rgba(15,23,42,0.08)',
+                borderColor: 'rgba(251,191,36,0.18)',
                 bgcolor: 'rgba(255,255,255,0.62)',
                 background:
                   'radial-gradient(220px 120px at 10% 0%, rgba(250,204,21,0.14), transparent 60%), radial-gradient(260px 150px at 85% 20%, rgba(79,70,229,0.12), transparent 60%), linear-gradient(135deg, rgba(255,255,255,0.72), rgba(255,255,255,0.55))',
@@ -678,21 +721,29 @@ export function WeeklyScoreDetailPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent>
-          <Stack
-            spacing={1.25}
-            sx={{
-              p: 1.25,
-              borderRadius: 4,
-              border: '1px solid',
-              borderColor: 'rgba(15,23,42,0.08)',
-              bgcolor: 'rgba(255,255,255,0.65)',
-              background:
-                'radial-gradient(200px 120px at 15% 0%, rgba(244,114,182,0.16), transparent 60%), radial-gradient(240px 140px at 85% 30%, rgba(79,70,229,0.14), transparent 60%), linear-gradient(135deg, rgba(255,255,255,0.70), rgba(255,255,255,0.55))',
-            }}
-          >
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} alignItems={{ md: 'center' }}>
+      {/* 选一天来打分 - KIDS 风格 */}
+      <Card
+        sx={{
+          borderRadius: 5,
+          border: '1px solid',
+          borderColor: 'rgba(244,114,182,0.20)',
+          background:
+            'radial-gradient(240px 120px at 12% 0%, rgba(244,114,182,0.12), transparent 55%), radial-gradient(260px 140px at 88% 20%, rgba(79,70,229,0.10), transparent 55%), linear-gradient(160deg, rgba(255,255,255,0.92), rgba(253,242,248,0.88))',
+        }}
+      >
+        <CardContent sx={{ py: 2, px: { xs: 2, sm: 2.5 } }}>
+          <Stack spacing={2}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Sticker name="flower" size={22} />
+              <Typography sx={{ fontWeight: 1000, letterSpacing: -0.2, fontSize: '1.1rem' }}>
+                选一天来打分
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 800 }}>
+                点下面的「周一到周日」，用 ☀️ 满分、🌤 半分、☁️ 未评来标记～
+              </Typography>
+            </Box>
+
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ md: 'center' }}>
               <Tabs
                 value={day - 1}
                 onChange={(_, v) => setDay(Number(v) + 1)}
@@ -700,41 +751,43 @@ export function WeeklyScoreDetailPage() {
                 scrollButtons="auto"
                 sx={{
                   flex: 1,
-                  minWidth: 320,
-                  '& .MuiTab-root': { fontWeight: 950, textTransform: 'none' },
+                  minWidth: 280,
+                  '& .MuiTab-root': { fontWeight: 950, textTransform: 'none', minHeight: 44 },
+                  '& .MuiTabs-indicator': { height: 4, borderRadius: 999 },
                 }}
               >
                 {Array.from({ length: 7 }).map((_, i) => {
                   const v = dayTotals[i] ?? 0
                   const label = `周${DAY_CN[i]} ${v > 0 ? `+${v}` : v}`
-                  return <Tab key={i} label={label} />
+                  return <Tab key={i} label={label} /> 
                 })}
               </Tabs>
 
-              <Stack direction="row" spacing={0.75} sx={{ display: { xs: 'none', md: 'flex' }, opacity: 0.9 }}>
-                <Sticker name="weatherSun" size={18} />
-                <Sticker name="weatherSunCloud" size={18} />
-                <Sticker name="weatherCloud" size={18} />
+              <Stack direction="row" spacing={0.75} sx={{ display: { xs: 'none', md: 'flex' }, opacity: 0.9 }} alignItems="center">
+                <Sticker name="weatherSun" size={20} />
+                <Sticker name="weatherSunCloud" size={20} />
+                <Sticker name="weatherCloud" size={20} />
               </Stack>
 
               <Chip
-                label={`当日总分：${dayTotal > 0 ? `+${dayTotal}` : dayTotal}`}
-                sx={{ fontWeight: 950, bgcolor: 'rgba(255,255,255,0.70)' }}
+                icon={<Sticker name="sparkles" size={16} />}
+                label={`今天总分：${dayTotal > 0 ? `+${dayTotal}` : dayTotal}`}
+                sx={{ fontWeight: 950, bgcolor: 'rgba(255,255,255,0.75)', border: '1px solid', borderColor: 'rgba(244,114,182,0.22)' }}
               />
             </Stack>
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} useFlexGap flexWrap="wrap" alignItems="center">
               <FormControlLabel
-                control={<Switch checked={onlyUnreviewed} onChange={(e) => setOnlyUnreviewed(e.target.checked)} />}
-                label="只看未评"
+                control={<Switch checked={onlyUnreviewed} onChange={(e) => setOnlyUnreviewed(e.target.checked)} size="small" />}
+                label={<Typography variant="body2" sx={{ fontWeight: 800 }}>只看未评</Typography>}
               />
               <Box sx={{ flex: 1 }} />
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                <Button variant="outlined" onClick={copyFromYesterday} disabled={isLocked || day <= 1}>
+                <Button variant="outlined" size="medium" onClick={copyFromYesterday} disabled={isLocked || day <= 1}>
                   复制昨天
                 </Button>
-                <Button variant="outlined" onClick={setAllCloudForDay} disabled={isLocked}>
-                  本日清空（☁️）
+                <Button variant="outlined" size="medium" startIcon={<Sticker name="weatherCloud" size={18} />} onClick={setAllCloudForDay} disabled={isLocked}>
+                  本日清空
                 </Button>
               </Stack>
             </Stack>
@@ -742,7 +795,18 @@ export function WeeklyScoreDetailPage() {
         </CardContent>
       </Card>
 
-      <Stack spacing={1.5}>
+      {/* 每天的表现 - 分类折叠 */}
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1, flexWrap: 'wrap' }}>
+          <Sticker name="sprout" size={18} />
+          <Typography sx={{ fontWeight: 1000, letterSpacing: -0.2, fontSize: '0.95rem' }}>
+            每天的表现
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800 }}>
+            展开每一项，用天气图标打分
+          </Typography>
+        </Box>
+      <Stack spacing={1}>
         {dayView.map(({ cat, dims, catTotal, reviewedCount, totalCount }) => {
           const tint = catTint(cat)
           const pct = totalCount ? Math.round((reviewedCount / totalCount) * 100) : 0
@@ -817,65 +881,8 @@ export function WeeklyScoreDetailPage() {
                     >
                       <CardContent sx={{ py: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
-                          <Box sx={{ flex: 1, minWidth: 220 }}>
+                          <Box sx={{ flex: 1, minWidth: 180 }}>
                             <Typography sx={{ fontWeight: 950, letterSpacing: -0.2 }}>{name}</Typography>
-                            {cat === 'PENALTY' ? (
-                              <Stack
-                                direction="row"
-                                spacing={1}
-                                useFlexGap
-                                flexWrap="wrap"
-                                alignItems="center"
-                                sx={{ mt: 0.25, color: 'text.secondary' }}
-                              >
-                                <Stack direction="row" spacing={0.5} alignItems="center">
-                                  <Sticker name="weatherStorm" size={14} />
-                                  <Typography variant="caption" sx={{ fontWeight: 900 }}>
-                                    -{item.maxScore}
-                                  </Typography>
-                                </Stack>
-                                <Stack direction="row" spacing={0.5} alignItems="center">
-                                  <Sticker name="weatherRain" size={14} />
-                                  <Typography variant="caption" sx={{ fontWeight: 900 }}>
-                                    -{halfScore(item.maxScore)}
-                                  </Typography>
-                                </Stack>
-                                <Stack direction="row" spacing={0.5} alignItems="center">
-                                  <Sticker name="weatherCloud" size={14} />
-                                  <Typography variant="caption" sx={{ fontWeight: 900 }}>
-                                    0
-                                  </Typography>
-                                </Stack>
-                              </Stack>
-                            ) : (
-                              <Stack
-                                direction="row"
-                                spacing={1}
-                                useFlexGap
-                                flexWrap="wrap"
-                                alignItems="center"
-                                sx={{ mt: 0.25, color: 'text.secondary' }}
-                              >
-                                <Stack direction="row" spacing={0.5} alignItems="center">
-                                  <Sticker name="weatherSun" size={14} />
-                                  <Typography variant="caption" sx={{ fontWeight: 900 }}>
-                                    +{item.maxScore}
-                                  </Typography>
-                                </Stack>
-                                <Stack direction="row" spacing={0.5} alignItems="center">
-                                  <Sticker name="weatherSunCloud" size={14} />
-                                  <Typography variant="caption" sx={{ fontWeight: 900 }}>
-                                    +{halfScore(item.maxScore)}
-                                  </Typography>
-                                </Stack>
-                                <Stack direction="row" spacing={0.5} alignItems="center">
-                                  <Sticker name="weatherCloud" size={14} />
-                                  <Typography variant="caption" sx={{ fontWeight: 900 }}>
-                                    0
-                                  </Typography>
-                                </Stack>
-                              </Stack>
-                            )}
                           </Box>
 
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
@@ -1032,19 +1039,28 @@ export function WeeklyScoreDetailPage() {
           </Accordion>
         )})}
       </Stack>
+      </Box>
 
+      {/* 周总结小卡 - KIDS 风格 */}
       <Card
         sx={{
-          borderColor: 'rgba(15,23,42,0.10)',
+          borderRadius: 5,
+          border: '1px solid',
+          borderColor: 'rgba(34,197,94,0.18)',
           background:
-            'radial-gradient(240px 140px at 10% 0%, rgba(34,197,94,0.14), transparent 60%), radial-gradient(260px 150px at 85% 30%, rgba(250,204,21,0.14), transparent 60%), linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.58))',
+            'radial-gradient(280px 140px at 10% 0%, rgba(34,197,94,0.10), transparent 55%), radial-gradient(260px 150px at 90% 20%, rgba(250,204,21,0.12), transparent 55%), linear-gradient(160deg, rgba(255,255,255,0.92), rgba(240,253,244,0.88))',
         }}
       >
-        <CardContent>
-          <Stack spacing={1.25}>
+        <CardContent sx={{ py: 2, px: { xs: 2, sm: 2.5 } }}>
+          <Stack spacing={2}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Sticker name="sparkles" size={18} />
-              <Typography sx={{ fontWeight: 1100, letterSpacing: -0.2 }}>周总结小卡</Typography>
+              <Sticker name="sparkles" size={22} />
+              <Typography sx={{ fontWeight: 1000, letterSpacing: -0.2, fontSize: '1.1rem' }}>
+                周总结小卡
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 800 }}>
+                写一写本周亮点、要改进的、下周小目标～
+              </Typography>
               <Box sx={{ flex: 1 }} />
               <Button
                 size="small"
@@ -1067,11 +1083,14 @@ export function WeeklyScoreDetailPage() {
               label="本周亮点（建议 3 条）"
               value={reflection.highlights}
               onChange={(e) => setReflection((prev) => ({ ...prev, highlights: e.target.value }))}
-              placeholder="例如：1) 主动完成作业\n2) 自己整理书包\n3) 和同学友好相处"
+              placeholder="例如：1) 主动完成作业
+2) 自己整理书包
+3) 和同学友好相处"
               multiline
               minRows={3}
               disabled={isLocked}
               fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
             />
 
             <TextField
@@ -1083,17 +1102,21 @@ export function WeeklyScoreDetailPage() {
               minRows={2}
               disabled={isLocked}
               fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
             />
 
             <TextField
               label="下周小目标（最多 3 条）"
               value={reflection.nextGoals}
               onChange={(e) => setReflection((prev) => ({ ...prev, nextGoals: e.target.value }))}
-              placeholder="例如：1) 每天阅读 20 分钟\n2) 放学后先写作业再玩\n3) 周末帮忙做一次家务"
+              placeholder="例如：1) 每天阅读 20 分钟
+2) 放学后先写作业再玩
+3) 周末帮忙做一次家务"
               multiline
               minRows={2}
               disabled={isLocked}
               fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
             />
 
             <TextField
@@ -1105,6 +1128,7 @@ export function WeeklyScoreDetailPage() {
               minRows={2}
               disabled={isLocked}
               fullWidth
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
             />
           </Stack>
         </CardContent>

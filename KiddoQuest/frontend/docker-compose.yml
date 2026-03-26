@@ -1,0 +1,22 @@
+# UI + nginx reverse proxy: browser uses one origin; /api/* goes to Spring Boot.
+#
+# 1. Start the backend on the host (e.g. port 8081).
+# 2. From this directory: docker compose up --build
+# 3. Open http://localhost:8080 (same host for React and /api — no CORS for your API).
+#
+# CentOS/Linux needs extra_hosts; Docker Desktop also works with it.
+
+services:
+  frontend:
+    image: kiddoquest-frontend:latest
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      # Spring on the Docker host, port from backend application.yaml
+      BACKEND_URL: http://host.docker.internal:8081
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+
